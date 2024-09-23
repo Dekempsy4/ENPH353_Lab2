@@ -8,16 +8,16 @@ import cv2
 import numpy as np
 
 
-rospy.init_node('topic_publisher')
-rospy.loginfo('HEYYYYYYYYYYYYYYYYY')
+rospy.init_node('move_robots')
 
-class image_converter: 
+class image_analyzer: 
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/rrbot/camera1/image_raw", Image, self.callback) 
         self.previous_index = 0
-        self.frame_height_from_bottom = 5
         self.prev_error = 0
+        self.frame_height_from_bottom = 5
+
 
     def callback(self,data):
         try:
@@ -27,6 +27,7 @@ class image_converter:
         
         self.analyze_image(cv_image)
 
+    # used proportion and derivative response to adjust yaw
     def pid_control(self, setpoint, current_value):
         Kp = 0.020
         Kd = 0.0013
@@ -73,29 +74,21 @@ class image_converter:
         yaw = self.pid_control((frame_width / 2), ball_center_index)
         drive_robot(yaw)
 
+        # opens a new window with the analyzed images
         cv2.imshow("Image window", cv_image)
         cv2.waitKey(3)
-
-
 
 
 pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 rate = rospy.Rate(60)
 move = Twist()
-ic = image_converter()
+ic = image_analyzer()
 
-# direction = 0 -> drive left
-# direction = 1 -> drive right
+
+# send movement command to the robots
 def drive_robot(yaw):
     move.linear.x = 1.1
     move.angular.z = yaw
-    # if not direction:
-    #     move.angular.z = 2.0
-    # else:
-    #     move.angular.z = -2.0
-
-
-
 
 
 while not rospy.is_shutdown():
