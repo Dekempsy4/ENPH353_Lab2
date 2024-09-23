@@ -87,7 +87,7 @@ ic = image_analyzer()
 
 # send movement command to the robots
 def drive_robot(yaw):
-    move.linear.x = 1.1
+    move.linear.x = 1.0
     move.angular.z = yaw
 
 
